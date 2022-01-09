@@ -1,11 +1,11 @@
 name: wyy签到
 # on用来控制何时运行这个workflow
 on:
-# 在push或者pull_request时触发这个事件的workflow
+# 在push或者pull_request时触发这个事件的workflow，分支名为main
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
   schedule:
     - cron: 0 22,6 * * *
   watch:
