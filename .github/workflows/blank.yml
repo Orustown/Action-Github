@@ -1,0 +1,60 @@
+name: wyy签到
+# on用来控制何时运行这个workflow
+on:
+# 在push或者pull_request时触发这个事件的workflow
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  schedule:
+    - cron: 0 22,6 * * *
+  watch:
+    types: started
+
+# 一个workflow可以由多个job组成，可以并行或者分离运行
+jobs:
+  build:
+  # 运行在最新的Ubuntu镜像
+    runs-on: ubuntu-latest
+    if: github.event.repository.owner.id == github.event.sender.id
+
+    steps:
+    # 将你的job指向你的文件目录$GITHUB_WORKSPACE，用来运行你的脚本
+    - uses: actions/checkout@v2
+    - name: 初始化Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.7
+    - name: 签到
+      run: |
+        pip install -r requirements.txt
+        
+        user='${{ secrets.USER }}'
+        pwd='${{ secrets.PWD }}'
+        
+        user_list=()
+        pwd_list=()
+        IFS="#"
+        for u in ${user[*]}
+        do
+        user_list[${#user_list[*]}]=${u}
+        done
+        for p in ${pwd[*]}
+        do
+        pwd_list[${#pwd_list[*]}]=${p}
+        done
+        user_num=${#user_list[*]}
+        pwd_num=${#pwd_list[*]}
+        if [ $user_num != $pwd_num ];then
+        echo "账号和密码个数不对应"
+        exit 1
+        else
+        echo "共有 $user_num 个账号，即将开始签到"
+        fi
+        for ((i=0;i<$user_num;i++))
+        do
+        python3 checkin.py <<EOF
+        ${user_list[$i]}
+        ${pwd_list[$i]}
+        EOF
+        done
