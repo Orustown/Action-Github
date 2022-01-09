@@ -1,15 +1,20 @@
-name: wyy签到
+name: 网易云签到Action
 # on用来控制何时运行这个workflow
 on:
-# 在push或者pull_request时触发这个事件的workflow，分支名为main
+  # 在push或者pull_request时触发这个事件的workflow，分支名为main，
+  # 也可以不指定分支，比如 on:[push]
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  # 每天以GitHub时区的22点和6点执行，即北京时区的6点和14点
   schedule:
     - cron: 0 22,6 * * *
   watch:
     types: started
+  # 允许手动在GitHub网页上执行该workflow
+  workflow_dispatch:
+  
 
 # 一个workflow可以由多个job组成，可以并行或者分离运行
 jobs:
@@ -21,11 +26,14 @@ jobs:
     steps:
     # 将你的job指向你的文件目录$GITHUB_WORKSPACE，用来运行你的脚本
     - uses: actions/checkout@v2
-    - name: 初始化Python
+    - name: 初始化Python -> 3.7
       uses: actions/setup-python@v2
       with:
         python-version: 3.7
-    - name: 签到
+    - name: 执行签到指令
+    # 每个步骤也都有一个name，表示该步骤的名称
+    # run后面添加你自己要执行的命令，如果有多条命令，用 | 换行
+    # 如果只有一行命令，可以直接写作run后面
       run: |
         pip install -r requirements.txt
         

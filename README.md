@@ -50,5 +50,27 @@ GitHub Actions 有一些自己的术语：
 
 
 
+定时表达式
+
+> on:
+>
+>   schedule:
+>
+>    - cron: 0 22,6 * * *
+
+每天以GitHub时区的22点和6点执行，即北京时区的6点和14点
+
+
+
 启用Action
+
+
+
+
+
+[Github Action 快速上手指南](https://www.jianshu.com/p/5406a3a4f3ba)
+
+[白嫖Github Action做定时任务](https://www.jianshu.com/p/2deed352023b)
+
+[京东，百度，网易云音乐自动签到](https://github.com/cc3300/Action-Auto-Sign)
 
