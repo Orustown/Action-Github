@@ -31,15 +31,13 @@ def protect(text):
 
 s = requests.Session()
 header = {}
-url = "https://music.163.com/weapi/login/cellphone"
-url2 = "https://music.163.com/weapi/point/dailyTask"
-url3 = "https://music.163.com/weapi/v1/discovery/recommend/resource"
-logindata = {
-    "phone": input(),
-    "countrycode": "86",
-    "password": md5(input()),
-    "rememberLogin": "true",
-}
+ logindata = {
+     "phone": input(),
+     "countrycode": "86",
+     "password": md5(input()),
+     "rememberLogin": "true",
+ }
+
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36',
     "Referer": "http://music.163.com/",
@@ -53,6 +51,7 @@ headers2 = {
 }
 
 print("-------------------------------进行中------------------------------------")
+url = "https://music.163.com/weapi/login/cellphone"
 res = s.post(url=url, data=protect(json.dumps(logindata)), headers=headers2)
 tempcookie = res.cookies
 object = json.loads(res.text)
@@ -62,59 +61,40 @@ else:
     print("登录失败！请检查密码是否正确！" + str(object['code']))
     exit(object['code'])
 
-print("正在签到(ง •_•)ง")
-res = s.post(url=url2, data=protect('{"type":0}'), headers=headers)
-object = json.loads(res.text)
-if object['code'] != 200 and object['code'] != -2:
-    print("签到时发生错误：" + object['msg'])
-else:
-    if object['code'] == 200:
-        print("签到成功，共获得" + str(object['point']) + "点经验值！")
-    else:
-        print("重复签到！")
+print("正在签到...")
+url = "https://music.163.com/weapi/point/dailyTask"
+res = s.post(url=url, data=protect('{"type":0}'), headers=headers)
+res2 = s.post(url=url, data=protect('{"type":1}'), headers=headers)
+print({"type": 0}, json.loads(res.text))
+print({"type": 1}, json.loads(res2.text))
 
-print("正在听歌(ง •_•)ง")
-res = s.post(url=url3,
-             data=protect('{"csrf_token":"' + requests.utils.dict_from_cookiejar(tempcookie)['__csrf'] + '"}'),
+print("正在听歌...")
+buffer = []
+url = "https://music.163.com/weapi/v1/discovery/recommend/resource"
+res = s.post(url=url, data=protect('{"csrf_token":"' + requests.utils.dict_from_cookiejar(tempcookie)['__csrf'] + '"}'),
              headers=headers)
 object = json.loads(res.text, strict=False)
-for x in object['recommend']:
+for songList in object['recommend']:
     url = 'https://music.163.com/weapi/v3/playlist/detail?csrf_token=' + requests.utils.dict_from_cookiejar(tempcookie)[
         '__csrf']
-    data = {
-        'id': x['id'],
-        'n': 1000,
-        'csrf_token': requests.utils.dict_from_cookiejar(tempcookie)['__csrf'],
-    }
+    data = {'id': songList['id'], 'n': 1000, 'csrf_token': requests.utils.dict_from_cookiejar(tempcookie)['__csrf']}
     res = s.post(url, protect(json.dumps(data)), headers=headers)
     object = json.loads(res.text, strict=False)
-    buffer = []
-    count = 0
-    for j in object['playlist']['trackIds']:
-        data2 = {}
-        data2["action"] = "play"
-        data2["json"] = {}
-        data2["json"]["download"] = 0
-        data2["json"]["end"] = "playend"
-        data2["json"]["id"] = j["id"]
-        data2["json"]["sourceId"] = ""
-        data2["json"]["time"] = "240"
-        data2["json"]["type"] = "song"
-        data2["json"]["wifi"] = 0
-        buffer.append(data2)
-        count += 1
-        if count >= 310:
+    print("Count:" + str(len(object['playlist']['trackIds'])) + "\t歌单:『" + str(object['playlist']['name']) + "』")
+    songData = {'action': 'play',
+                'json': {'download': 0, 'end': 'playend', 'sourceId': '', 'time': '240', 'type': 'song', 'wifi': 0}}
+    for song in object['playlist']['trackIds']:
+        songData["json"]["id"] = song["id"]
+        buffer.append(songData)
+        if len(buffer) >= 350:
             break
-    if count >= 310:
+    if len(buffer) >= 350:
         break
 url = "http://music.163.com/weapi/feedback/weblog"
-postdata = {
-    "logs": json.dumps(buffer)
-}
-res = s.post(url, protect(json.dumps(postdata)))
+res = s.post(url, protect(json.dumps({"logs": json.dumps(buffer)})))
 object = json.loads(res.text, strict=False)
 if object['code'] == 200:
-    print("听歌成功，一共听了" + str(count) + "首歌！")
+    print("听歌成功，一共听了" + str(len(buffer)) + "首歌！")
     print("-------------------------------已完成------------------------------------")
     exit()
 else:
