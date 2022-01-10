@@ -31,12 +31,12 @@ def protect(text):
 
 s = requests.Session()
 header = {}
- logindata = {
-     "phone": input(),
-     "countrycode": "86",
-     "password": md5(input()),
-     "rememberLogin": "true",
- }
+logindata = {
+    "phone": input(),
+    "countrycode": "86",
+    "password": md5(input()),
+    "rememberLogin": "true",
+}
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36',
