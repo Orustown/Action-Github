@@ -80,7 +80,8 @@ for songList in object['recommend']:
     data = {'id': songList['id'], 'n': 1000, 'csrf_token': requests.utils.dict_from_cookiejar(tempcookie)['__csrf']}
     res = s.post(url, protect(json.dumps(data)), headers=headers)
     object = json.loads(res.text, strict=False)
-    print("Count:" + str(len(object['playlist']['trackIds'])) + "\t歌单:『" + str(object['playlist']['name']) + "』")
+
+    print("Count:" + str(songList['trackCount']) + "\t歌单:『" + songList['name'] + "』\t" + songList['copywriter'])
     songData = {'action': 'play',
                 'json': {'download': 0, 'end': 'playend', 'sourceId': '', 'time': '240', 'type': 'song', 'wifi': 0}}
     for song in object['playlist']['trackIds']:
